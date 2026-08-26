@@ -6,30 +6,42 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<title>バケットリスト</title>
+<title>Life List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bevan&family=Special+Elite&family=Vollkorn:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
   :root{
-    --bg:#f6f3ec;
-    --surface:#fffdf8;
-    --surface-alt:#f1ece2;
-    --text:#2a2620;
-    --sub:#847c6c;
-    --border:#e7e0d2;
-    --accent:#e0538f;
-    --accent-soft:#fdeaf1;
-    --shadow-sm:0 1px 3px rgba(30,25,15,0.05);
-    --shadow-md:0 8px 24px rgba(30,25,15,0.12);
+    --bg:#f3ead2;
+    --surface:#fbf4e6;
+    --surface-alt:#ecdcb8;
+    --text:#262e35;
+    --sub:#7a6b4e;
+    --border:#ddc89a;
+    --accent:#a3462f;
+    --accent-soft:#f3e0d5;
+    --mustard:#c1862b;
+    --ink:#1f3b4d;
+    --done:#8c8168;
+    --shadow-sm:0 1px 3px rgba(30,25,15,0.06);
+    --shadow-md:0 8px 24px rgba(30,25,15,0.14);
     --radius:14px;
     --rule-line:rgba(70,100,160,0.22);
     --rule-margin:rgba(214,90,90,0.45);
     --font-serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,serif;
+    --font-display:"Bevan",var(--font-serif);
+    --font-label:"Special Elite","Courier New",monospace;
+    --font-en-serif:"Vollkorn",var(--font-serif);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  html,body{margin:0;height:100%;color:var(--text);
+    background:
+      radial-gradient(ellipse 120% 60% at 50% -10%, rgba(31,59,77,0.07), transparent 60%),
+      var(--bg);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
     overscroll-behavior:none;}
   button{font-family:inherit;}
-  #app{display:flex;flex-direction:column;height:100vh;}
+  #app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
 
   /* ---- icons ---- */
   .icon{
@@ -41,25 +53,38 @@
 
   /* ---- top bar ---- */
   .topbar{
+    position:relative;
     display:flex;align-items:center;justify-content:space-between;gap:8px;
-    padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);
+    padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:var(--surface);border-bottom:1px solid var(--border);
     flex:none;
   }
-  .brand{font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px;}
+  .topbar::after{
+    content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;
+    background:repeating-linear-gradient(90deg, var(--accent) 0 10px, transparent 10px 18px);
+    opacity:.5;
+  }
+  .brand{font-size:16px;font-weight:800;display:flex;align-items:center;gap:9px;}
   .brand .icon{color:var(--accent);}
+  .brand-text{display:flex;flex-direction:column;line-height:1.1;}
+  .brand-name{font-family:var(--font-display);font-weight:400;font-size:19px;letter-spacing:0.01em;color:var(--text);}
+  .brand-tag{font-family:var(--font-label);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--sub);}
   .topbar-actions{display:flex;gap:6px;}
   .icon-btn{
     border:none;background:var(--surface-alt);color:var(--text);width:36px;height:36px;
     border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+    transition:transform .12s ease;
   }
   .icon-btn.primary{background:var(--accent);color:#fff;}
   .icon-btn:active{transform:scale(0.94);}
   .save-status{font-size:11px;color:var(--sub);text-align:right;padding:2px 16px;flex:none;}
   .save-status a{color:var(--accent);font-weight:700;}
 
-  main{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;position:relative;}
-  section{display:none;padding:16px 16px 28px;max-width:960px;margin:0 auto;}
-  section.active{display:block;}
+  main{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;position:relative;}
+  section{display:none;padding:16px 16px 28px;max-width:1100px;margin:0 auto;}
+  section.active{display:block;animation:viewIn .18s ease;}
+  @keyframes viewIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  @media (prefers-reduced-motion: reduce){ section.active{animation:none;} }
 
   /* ---- bottom tab bar ---- */
   .tabbar{
@@ -69,15 +94,33 @@
   .tab{
     flex:1;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;
     gap:2px;padding:6px 2px;border-radius:12px;color:var(--sub);cursor:pointer;font-size:11px;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+    transition:transform .12s ease,color .12s ease,background .12s ease;
   }
+  .tab-label{white-space:nowrap;}
   .tab.active{color:var(--accent);background:var(--accent-soft);}
+  .tab:active{transform:scale(0.95);}
+
+  @media (max-height:850px){
+    .topbar{padding-top:calc(6px + env(safe-area-inset-top));padding-bottom:6px;}
+    .brand{font-size:14px;}
+    .icon-btn{width:32px;height:32px;border-radius:10px;}
+    section{padding:12px 16px 20px;}
+  }
 
   .hint{color:var(--sub);font-size:12.5px;margin:0 0 14px;line-height:1.7;}
+  .callout{
+    background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:10px;
+    padding:10px 12px;font-size:12px;color:var(--text);line-height:1.65;margin:0 0 16px;
+  }
   .home-cards{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
   .home-card{
     background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--accent);
     border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);cursor:pointer;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+    transition:transform .12s ease;
   }
+  .home-card:active{transform:scale(0.98);}
   .home-icon-tile{
     width:46px;height:46px;border-radius:13px;background:var(--accent-soft);color:var(--accent);
     display:flex;align-items:center;justify-content:center;margin-bottom:10px;
@@ -124,11 +167,14 @@
   .item-row{
     display:flex;align-items:center;gap:10px;background:var(--surface);
     border:1px solid var(--border);border-radius:14px;padding:8px 10px;margin-bottom:7px;cursor:pointer;
+    transition:transform .12s ease;
   }
+  .item-row:active{transform:scale(0.99);}
   .item-row.done{background:var(--accent-soft);}
   .item-num{
     width:30px;height:30px;flex:none;border-radius:10px;background:var(--surface-alt);color:var(--sub);
-    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;position:relative;
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;position:relative;
+    font-family:var(--font-en-serif);
   }
   .item-row.done .item-num{background:var(--accent);color:#fff;}
   .item-row input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--accent);}
@@ -137,9 +183,9 @@
   .item-title-label.show{display:block;}
   .item-canvas-wrap{flex:1;position:relative;min-height:0;}
   .item-canvas-wrap canvas{display:block;width:100%;height:100%;}
-  .item-canvas-wrap .placeholder{position:absolute;inset:0;display:flex;align-items:center;font-size:12px;color:#b7bac1;padding-left:8px;pointer-events:none;}
+  .item-canvas-wrap .placeholder{position:absolute;inset:0;display:flex;align-items:center;font-size:12px;color:var(--sub);opacity:.7;padding-left:8px;pointer-events:none;}
   .item-meta{flex:none;display:flex;flex-direction:column;gap:2px;align-items:flex-end;}
-  .pill{font-size:10px;color:var(--sub);white-space:nowrap;display:flex;align-items:center;gap:3px;}
+  .pill{font-size:10px;color:var(--mustard);white-space:nowrap;display:flex;align-items:center;gap:3px;font-family:var(--font-en-serif);}
   .pill.pill-done{color:var(--accent);}
 
   /* ---- modal ---- */
@@ -153,7 +199,7 @@
     padding:16px;box-shadow:var(--shadow-md);
   }
   .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-  .modal-header span{font-weight:600;font-size:17px;color:var(--accent);font-family:var(--font-serif);letter-spacing:0.02em;}
+  .modal-header span{font-weight:600;font-size:18px;color:var(--accent);font-family:var(--font-en-serif);letter-spacing:0.02em;}
   .field-group{margin-bottom:12px;}
   .field-label{font-size:11px;color:var(--sub);margin-bottom:4px;font-weight:600;}
   .title-input{
@@ -187,18 +233,18 @@
   .tray-chip{
     flex:none;width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;
     display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;cursor:grab;
-    touch-action:none;
+    touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
   }
-  .tray-chip.done{background:#8b8f98;}
+  .tray-chip.done{background:var(--done);}
   .tray-chip.dragging{opacity:0.3;}
   .drag-ghost{
     position:fixed;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;
     display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;
     pointer-events:none;z-index:200;box-shadow:0 6px 16px rgba(0,0,0,.3);transform:translate(-50%,-50%);
   }
-  .drag-ghost.done{background:#8b8f98;}
+  .drag-ghost.done{background:var(--done);}
   #mapWrap{
-    position:relative;width:100%;max-width:560px;aspect-ratio:1/1;margin:0 auto 14px;
+    position:relative;width:100%;max-width:820px;aspect-ratio:16/9;margin:0 auto 14px;
     background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);touch-action:none;
     overflow:hidden;
   }
@@ -215,18 +261,19 @@
   .map-dot{
     position:absolute;width:30px;height:30px;border-radius:50%;background:var(--accent);
     color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;
-    transform:translate(-50%,-50%);cursor:grab;box-shadow:0 2px 6px rgba(0,0,0,.25);user-select:none;
+    transform:translate(-50%,-50%);cursor:grab;box-shadow:0 2px 6px rgba(0,0,0,.25);
+    user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
     touch-action:none;
   }
   .map-dot.dragging{opacity:0.3;}
-  .map-dot.done{background:#8b8f98;}
-  .map-legend{font-size:12px;color:var(--sub);max-width:560px;margin:0 auto;}
+  .map-dot.done{background:var(--done);}
+  .map-legend{font-size:12px;color:var(--sub);max-width:820px;margin:0 auto;}
   .map-legend span{display:inline-flex;align-items:center;gap:4px;margin-right:14px;}
   .dot-swatch{width:10px;height:10px;border-radius:50%;display:inline-block;}
 
   /* ---- diary ---- */
   .diary-title-row{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;cursor:pointer;flex-wrap:wrap;}
-  .diary-title-num{font-size:12px;font-weight:800;color:var(--accent);background:var(--accent-soft);padding:4px 9px;border-radius:8px;flex:none;}
+  .diary-title-num{font-size:12px;font-weight:800;color:var(--accent);background:var(--accent-soft);padding:4px 9px;border-radius:8px;flex:none;font-family:var(--font-en-serif);}
   .diary-title-text{font-size:19px;font-weight:600;color:var(--text);font-family:var(--font-serif);letter-spacing:0.02em;}
   .diary-title-text.placeholder{color:var(--sub);font-weight:600;font-style:italic;font-size:13px;}
   .diary-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
@@ -234,7 +281,7 @@
   .diary-nav button{
     border:none;background:var(--surface-alt);border-radius:20px;padding:7px 14px;font-size:13px;cursor:pointer;
   }
-  .diary-nav .pagenum{font-size:12.5px;color:var(--sub);min-width:64px;text-align:center;}
+  .diary-nav .pagenum{font-size:12.5px;color:var(--sub);min-width:64px;text-align:center;font-family:var(--font-en-serif);}
   .diary-date-row{
     display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12.5px;color:var(--sub);
   }
@@ -243,12 +290,12 @@
   }
   .notebook-spread{
     display:flex;gap:14px;background:var(--surface);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow-sm);
-    min-height:380px;
+    min-height:clamp(380px, 64vh, 640px);
   }
   .nb-col{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;}
   .nb-left{flex:0.85;}
   .nb-right{flex:1.15;}
-  .nb-col canvas.ink{flex:1;width:100%;height:100%;min-height:340px;border:1px solid var(--border);}
+  .nb-col canvas.ink{flex:1;width:100%;height:100%;min-height:380px;border:1px solid var(--border);}
   .nb-left canvas.ink{background-color:#fbfbf9;background-size:cover;background-position:center;background-repeat:no-repeat;border-radius:10px;}
   .nb-right canvas.ink{
     background-color:#fffefb;border-radius:10px;
@@ -263,8 +310,9 @@
   }
   .nb-photo-actions button.hidden{display:none;}
   @media (max-width:680px){
-    .notebook-spread{flex-direction:column;}
+    .notebook-spread{flex-direction:column;min-height:auto;}
     .nb-col canvas.ink{min-height:220px;}
+    #mapWrap{aspect-ratio:1/1;max-width:420px;}
   }
 </style>
 </head>
@@ -286,10 +334,17 @@
   <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M5 7 H19"/><path d="M9 7 V5 H15 V7"/><path d="M7.5 7 L8.5 20 H15.5 L16.5 7"/></symbol>
   <symbol id="icon-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none"/></symbol>
   <symbol id="icon-checkcircle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8 12.3 L10.7 15 L16 9.3"/></symbol>
+  <symbol id="icon-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.2 8.8 L13 13 L8.8 15.2 L11 11 Z"/><circle cx="12" cy="4" r="0.9" fill="currentColor" stroke="none"/></symbol>
 </svg>
 <div id="app">
   <header class="topbar">
-    <div class="brand"><svg class="icon"><use href="#icon-book"></use></svg>バケットリスト</div>
+    <div class="brand">
+      <svg class="icon"><use href="#icon-compass"></use></svg>
+      <span class="brand-text">
+        <span class="brand-name">Life List</span>
+        <span class="brand-tag">One Hundred Wishes</span>
+      </span>
+    </div>
     <div class="topbar-actions">
       <button id="btnSettings" class="icon-btn" title="テーマカラー"><svg class="icon"><use href="#icon-palette"></use></svg></button>
       <button id="btnFileSync" class="icon-btn" title="ローカルファイルに自動保存"><svg class="icon"><use href="#icon-link"></use></svg></button>
@@ -309,6 +364,7 @@
   <main>
     <section id="view-home" class="active">
       <p class="hint">100個のやりたいことを手書きで書き、時間×お金マップで整理し、100ページの日記に記録していくアプリです。作業内容はこの端末に自動保存されますが、他の端末に移したり確実に残すには書き出しでファイル保存してください。</p>
+      <p class="callout">📱 <strong>iPadでご利用の場合</strong>: データはこの端末のSafariだけに保存され、他の端末とは同期されません。🔗「ローカルファイルに自動保存」はiPadのSafariでは使えないため、忘れずに💾「書き出し」で定期的にバックアップを取ってください(📂「読み込み」でいつでも復元できます)。</p>
       <div class="home-cards">
         <div class="home-card" data-goto="list">
           <div class="home-icon-tile"><svg class="icon icon-lg"><use href="#icon-checklist"></use></svg></div>
@@ -347,7 +403,7 @@
       </div>
       <div class="map-legend">
         <span><span class="dot-swatch" style="background:var(--accent)"></span>未達成</span>
-        <span><span class="dot-swatch" style="background:#8b8f98"></span>達成済み</span>
+        <span><span class="dot-swatch" style="background:var(--done)"></span>達成済み</span>
       </div>
     </section>
 
@@ -425,12 +481,12 @@ const ITEM_COUNT = 100;
 const DIARY_COUNT = 100;
 
 const THEMES = [
-  {key:"pink",   name:"ピンク",   accent:"#e0538f", soft:"#fdeaf1"},
-  {key:"green",  name:"グリーン", accent:"#2f9e63", soft:"#e7f7ee"},
-  {key:"blue",   name:"ブルー",   accent:"#3b6fed", soft:"#e9eefe"},
-  {key:"purple", name:"パープル", accent:"#8b5cf0", soft:"#f1ecfe"},
-  {key:"orange", name:"オレンジ", accent:"#e2823a", soft:"#fdedde"},
-  {key:"teal",   name:"ティール", accent:"#2f9e93", soft:"#e6f6f4"}
+  {key:"rust",    name:"ラスト",     accent:"#a3462f", soft:"#f3e0d5"},
+  {key:"mustard", name:"マスタード", accent:"#c1862b", soft:"#f7ecd4"},
+  {key:"navy",    name:"ネイビー",   accent:"#1f3b4d", soft:"#dfe6ea"},
+  {key:"sage",    name:"セージ",     accent:"#5f7a5e", soft:"#e6ecdf"},
+  {key:"plum",    name:"プラム",     accent:"#7a4a52", soft:"#f0dfe2"},
+  {key:"brass",   name:"ブラス",     accent:"#9c7a3f", soft:"#efe6cf"}
 ];
 const PEN_COLORS = [
   {key:"black", c:"#1c1c1c"},
@@ -634,7 +690,7 @@ function applyTheme(key){
 }
 function buildThemeGrid(){
   const grid = document.getElementById("themeGrid");
-  const current = (function(){ try{ return localStorage.getItem(THEME_KEY); }catch(e){ return null; } })() || "pink";
+  const current = (function(){ try{ return localStorage.getItem(THEME_KEY); }catch(e){ return null; } })() || "rust";
   THEMES.forEach(t=>{
     const sw = document.createElement("div");
     sw.className = "theme-swatch" + (t.key===current ? " on" : "");
