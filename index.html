@@ -80,8 +80,9 @@
   .save-status{font-size:11px;color:var(--sub);text-align:right;padding:2px 16px;flex:none;}
   .save-status a{color:var(--accent);font-weight:700;}
 
-  main{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;position:relative;}
-  section{display:none;padding:16px 16px 28px;max-width:1100px;margin:0 auto;}
+  main{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;position:relative;display:flex;flex-direction:column;}
+  section{display:none;padding:16px 16px 28px;max-width:1100px;margin:0 auto;width:100%;}
+  #view-diary.active{display:flex;flex-direction:column;flex:1;min-height:0;}
   section.active{display:block;animation:viewIn .18s ease;}
   @keyframes viewIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
   @media (prefers-reduced-motion: reduce){ section.active{animation:none;} }
@@ -178,12 +179,13 @@
   }
   .item-row.done .item-num{background:var(--accent);color:#fff;}
   .item-row input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--accent);}
-  .item-preview{flex:1;min-width:0;height:52px;border-radius:9px;background:var(--surface-alt);overflow:hidden;display:flex;flex-direction:column;}
-  .item-title-label{font-size:11.5px;font-weight:700;color:var(--text);padding:3px 8px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none;}
+  .item-preview{
+    flex:1;min-width:0;height:52px;border-radius:9px;background:var(--surface-alt);overflow:hidden;
+    display:flex;flex-direction:column;justify-content:center;padding:0 10px;
+  }
+  .item-title-label{font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none;}
   .item-title-label.show{display:block;}
-  .item-canvas-wrap{flex:1;position:relative;min-height:0;}
-  .item-canvas-wrap canvas{display:block;width:100%;height:100%;}
-  .item-canvas-wrap .placeholder{position:absolute;inset:0;display:flex;align-items:center;font-size:12px;color:var(--sub);opacity:.7;padding-left:8px;pointer-events:none;}
+  .item-status{font-size:12px;color:var(--sub);opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .item-meta{flex:none;display:flex;flex-direction:column;gap:2px;align-items:flex-end;}
   .pill{font-size:10px;color:var(--mustard);white-space:nowrap;display:flex;align-items:center;gap:3px;font-family:var(--font-en-serif);}
   .pill.pill-done{color:var(--accent);}
@@ -213,7 +215,10 @@
     font-family:inherit;
   }
   .detail-textarea:focus{outline:none;border-color:var(--accent);}
-  canvas.ink{touch-action:none;border-radius:10px;}
+  canvas.ink{
+    touch-action:manipulation;border-radius:10px;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  }
   canvas.modal-canvas{display:block;width:100%;height:260px;background:#fff;border:1px solid var(--border);}
   .date-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
   .date-grid label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--sub);}
@@ -272,30 +277,30 @@
   .dot-swatch{width:10px;height:10px;border-radius:50%;display:inline-block;}
 
   /* ---- diary ---- */
-  .diary-title-row{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;cursor:pointer;flex-wrap:wrap;}
+  .diary-title-row{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;cursor:pointer;flex-wrap:wrap;flex:none;}
   .diary-title-num{font-size:12px;font-weight:800;color:var(--accent);background:var(--accent-soft);padding:4px 9px;border-radius:8px;flex:none;font-family:var(--font-en-serif);}
   .diary-title-text{font-size:19px;font-weight:600;color:var(--text);font-family:var(--font-serif);letter-spacing:0.02em;}
   .diary-title-text.placeholder{color:var(--sub);font-weight:600;font-style:italic;font-size:13px;}
-  .diary-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .diary-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;flex:none;}
   .diary-nav{display:flex;align-items:center;gap:8px;}
   .diary-nav button{
     border:none;background:var(--surface-alt);border-radius:20px;padding:7px 14px;font-size:13px;cursor:pointer;
   }
   .diary-nav .pagenum{font-size:12.5px;color:var(--sub);min-width:64px;text-align:center;font-family:var(--font-en-serif);}
   .diary-date-row{
-    display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12.5px;color:var(--sub);
+    display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12.5px;color:var(--sub);flex:none;
   }
   .diary-date-row input[type=date]{
     border:1px solid var(--border);border-radius:9px;padding:6px 8px;font-size:13px;color:var(--text);background:var(--surface);
   }
   .notebook-spread{
     display:flex;gap:14px;background:var(--surface);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow-sm);
-    min-height:clamp(380px, 64vh, 640px);
+    flex:1;min-height:220px;
   }
-  .nb-col{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;}
+  .nb-col{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
   .nb-left{flex:0.85;}
   .nb-right{flex:1.15;}
-  .nb-col canvas.ink{flex:1;width:100%;height:100%;min-height:380px;border:1px solid var(--border);}
+  .nb-col canvas.ink{flex:1;width:100%;height:100%;min-height:0;border:1px solid var(--border);}
   .nb-left canvas.ink{background-color:#fbfbf9;background-size:cover;background-position:center;background-repeat:no-repeat;border-radius:10px;}
   .nb-right canvas.ink{
     background-color:#fffefb;border-radius:10px;
@@ -310,8 +315,8 @@
   }
   .nb-photo-actions button.hidden{display:none;}
   @media (max-width:680px){
-    .notebook-spread{flex-direction:column;min-height:auto;}
-    .nb-col canvas.ink{min-height:220px;}
+    .notebook-spread{flex-direction:column;}
+    .nb-col canvas.ink{min-height:140px;}
     #mapWrap{aspect-ratio:1/1;max-width:420px;}
   }
 </style>
@@ -492,7 +497,8 @@ const PEN_COLORS = [
   {key:"black", c:"#1c1c1c"},
   {key:"red",   c:"#d43b3b"},
   {key:"blue",  c:"#2f5fd6"},
-  {key:"green", c:"#2f9e5b"}
+  {key:"green", c:"#2f9e5b"},
+  {key:"white", c:"#ffffff"}
 ];
 const ICON_TARGET = '<svg class="icon icon-sm"><use href="#icon-target"></use></svg>';
 const ICON_CHECK = '<svg class="icon icon-sm"><use href="#icon-checkcircle"></use></svg>';
@@ -774,6 +780,7 @@ function createInk(canvas){
   let current = null;
   let getStrokes = ()=>[];
   let onChange = ()=>{};
+  const ctx = canvas.getContext("2d");
 
   function resize(){ sizeCanvas(canvas); redraw(); }
   function redraw(){
@@ -787,6 +794,21 @@ function createInk(canvas){
       y: Math.min(1, Math.max(0, (e.clientY-r.top)/r.height)),
       p: e.pressure && e.pressure>0 ? e.pressure : 0.5
     };
+  }
+  function drawSegment(p0, p1, color, size){
+    const dpr = canvas.__dpr || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.save();
+    ctx.scale(dpr, dpr);
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size * (0.6 + (p1.p||0.5));
+    ctx.beginPath();
+    ctx.moveTo(p0.x*w, p0.y*h);
+    ctx.lineTo(p1.x*w, p1.y*h);
+    ctx.stroke();
+    ctx.restore();
   }
   function eraseAt(pt){
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -802,19 +824,31 @@ function createInk(canvas){
     }
     if(strokes.length!==before){ redraw(); onChange(); }
   }
+  function isDrawingPointer(e){
+    return e.pointerType==="pen" || e.pointerType==="mouse";
+  }
   function pointerDown(e){
+    if(!isDrawingPointer(e)) return;
     activeInk = api;
     try{ canvas.setPointerCapture(e.pointerId); }catch(err){}
     const pt = toLocal(e);
     if(toolState.mode==="eraser"){ eraseAt(pt); }
-    else { current = {color:toolState.color, size:toolState.size, pts:[pt]}; redraw(); }
+    else { current = {color:toolState.color, size:toolState.size, pts:[pt]}; }
     e.preventDefault();
   }
   function pointerMove(e){
+    if(!isDrawingPointer(e)) return;
     if(e.buttons===0) return;
-    const pt = toLocal(e);
-    if(toolState.mode==="eraser"){ eraseAt(pt); }
-    else if(current){ current.pts.push(pt); redraw(); }
+    if(toolState.mode==="eraser"){ eraseAt(toLocal(e)); e.preventDefault(); return; }
+    if(current){
+      const events = (typeof e.getCoalescedEvents==="function" && e.getCoalescedEvents()) || [e];
+      events.forEach(ev=>{
+        const pt = toLocal(ev);
+        const prev = current.pts[current.pts.length-1];
+        current.pts.push(pt);
+        drawSegment(prev, pt, current.color, current.size);
+      });
+    }
     e.preventDefault();
   }
   function pointerUp(){
@@ -822,7 +856,6 @@ function createInk(canvas){
       if(current.pts.length>1) getStrokes().push(current);
       current = null;
       onChange();
-      redraw();
     }
   }
   canvas.addEventListener("pointerdown", pointerDown);
@@ -902,9 +935,12 @@ function refreshRow(id){
   ref.cb.checked = item.checked;
   ref.titleEl.textContent = item.title || "";
   ref.titleEl.classList.toggle("show", !!item.title);
-  ref.placeholder.style.display = item.strokes.length ? "none" : "flex";
-  sizeCanvas(ref.canvas);
-  paintStrokes(ref.canvas, item.strokes);
+  if(item.title){
+    ref.statusEl.style.display = "none";
+  } else {
+    ref.statusEl.style.display = "block";
+    ref.statusEl.textContent = item.strokes.length ? "✎ 記入あり" : "タップして記入…";
+  }
   ref.meta.innerHTML = "";
   if(item.targetDate){
     const p = document.createElement("div"); p.className="pill"; p.innerHTML = ICON_TARGET + formatShort(item.targetDate);
@@ -942,14 +978,9 @@ function renderList(){
     preview.className = "item-preview";
     const titleEl = document.createElement("div");
     titleEl.className = "item-title-label";
-    const canvasWrap = document.createElement("div");
-    canvasWrap.className = "item-canvas-wrap";
-    const canvas = document.createElement("canvas");
-    const placeholder = document.createElement("div");
-    placeholder.className = "placeholder";
-    placeholder.textContent = "タップして記入…";
-    canvasWrap.append(canvas, placeholder);
-    preview.append(titleEl, canvasWrap);
+    const statusEl = document.createElement("div");
+    statusEl.className = "item-status";
+    preview.append(titleEl, statusEl);
 
     const meta = document.createElement("div");
     meta.className = "item-meta";
@@ -961,15 +992,10 @@ function renderList(){
     });
 
     listContainer.appendChild(row);
-    rowRefs[item.id] = {row, cb, canvas, placeholder, meta, titleEl};
+    rowRefs[item.id] = {row, cb, meta, titleEl, statusEl};
     refreshRow(item.id);
   });
 }
-window.addEventListener("resize", ()=>{
-  if(document.getElementById("view-list").classList.contains("active")){
-    state.items.forEach(it=>refreshRow(it.id));
-  }
-});
 
 /* ---------------- item detail modal ---------------- */
 const itemModalEl = document.getElementById("itemModal");
