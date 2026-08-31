@@ -39,7 +39,9 @@
       radial-gradient(ellipse 120% 60% at 50% -10%, rgba(31,59,77,0.07), transparent 60%),
       var(--bg);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
-    overscroll-behavior:none;}
+    overscroll-behavior:none;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+  input, textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
   button{font-family:inherit;}
   #app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
 
@@ -751,6 +753,41 @@ function sizeCanvas(canvas){
   canvas.height = Math.max(1, Math.round(h*dpr));
   canvas.__dpr = dpr;
 }
+function strokeWidthAt(size, pt){ return size * (0.6 + (pt.p||0.5)); }
+function midPt(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2, p:b.p}; }
+/* Geometry for the smooth curve segment that becomes fully known once pts[i+1] arrives:
+   a quadratic curve using pts[i] as the control point, running from the midpoint of
+   (i-1,i) to the midpoint of (i,i+1) - the classic "smooth freehand line" technique.
+   Using midpoints (rather than the raw points) as the curve's anchors is what removes
+   the faceted/jagged look of a plain point-to-point polyline. */
+function curveSegmentGeom(pts, i){
+  const a=pts[i-1], b=pts[i], c=pts[i+1];
+  const start = i===1 ? a : midPt(a,b);
+  const end = midPt(b,c);
+  return {start, control:b, end};
+}
+function drawDot(ctx, pt, color, size, w, h){
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(pt.x*w, pt.y*h, strokeWidthAt(size,pt)/2, 0, Math.PI*2);
+  ctx.fill();
+}
+function drawCurveGeom(ctx, g, color, size, w, h){
+  ctx.strokeStyle = color;
+  ctx.lineWidth = strokeWidthAt(size, g.control);
+  ctx.beginPath();
+  ctx.moveTo(g.start.x*w, g.start.y*h);
+  ctx.quadraticCurveTo(g.control.x*w, g.control.y*h, g.end.x*w, g.end.y*h);
+  ctx.stroke();
+}
+function drawTailGeom(ctx, from, to, color, size, w, h){
+  ctx.strokeStyle = color;
+  ctx.lineWidth = strokeWidthAt(size, to);
+  ctx.beginPath();
+  ctx.moveTo(from.x*w, from.y*h);
+  ctx.lineTo(to.x*w, to.y*h);
+  ctx.stroke();
+}
 function paintStrokes(canvas, strokes){
   const ctx = canvas.getContext("2d");
   const dpr = canvas.__dpr || 1;
@@ -761,17 +798,14 @@ function paintStrokes(canvas, strokes){
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
   strokes.forEach(s=>{
-    if(!s.pts || s.pts.length===0) return;
-    ctx.strokeStyle = s.color;
-    ctx.beginPath();
-    ctx.moveTo(s.pts[0].x*w, s.pts[0].y*h);
-    for(let i=1;i<s.pts.length;i++){
-      ctx.lineWidth = s.size * (0.6 + (s.pts[i].p||0.5));
-      ctx.lineTo(s.pts[i].x*w, s.pts[i].y*h);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(s.pts[i].x*w, s.pts[i].y*h);
+    const pts = s.pts;
+    if(!pts || pts.length===0) return;
+    if(pts.length===1){ drawDot(ctx, pts[0], s.color, s.size, w, h); return; }
+    if(pts.length===2){ drawTailGeom(ctx, pts[0], pts[1], s.color, s.size, w, h); return; }
+    for(let i=1;i<pts.length-1;i++){
+      drawCurveGeom(ctx, curveSegmentGeom(pts, i), s.color, s.size, w, h);
     }
+    drawTailGeom(ctx, midPt(pts[pts.length-2], pts[pts.length-1]), pts[pts.length-1], s.color, s.size, w, h);
   });
   ctx.restore();
 }
@@ -781,6 +815,19 @@ function createInk(canvas){
   let getStrokes = ()=>[];
   let onChange = ()=>{};
   const ctx = canvas.getContext("2d");
+  const pointers = new Map();
+  let primaryId = null;
+  let pinch = null;
+  let view = {scale:1, x:0, y:0};
+
+  function applyView(){
+    canvas.style.transform = "translate("+view.x+"px,"+view.y+"px) scale("+view.scale+")";
+  }
+  function resetView(){
+    canvas.style.transition = "transform .2s ease";
+    view = {scale:1, x:0, y:0};
+    applyView();
+  }
 
   function resize(){ sizeCanvas(canvas); redraw(); }
   function redraw(){
@@ -795,20 +842,31 @@ function createInk(canvas){
       p: e.pressure && e.pressure>0 ? e.pressure : 0.5
     };
   }
-  function drawSegment(p0, p1, color, size){
+  function withCtx(fn){
     const dpr = canvas.__dpr || 1;
     const w = canvas.clientWidth, h = canvas.clientHeight;
     ctx.save();
     ctx.scale(dpr, dpr);
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.strokeStyle = color;
-    ctx.lineWidth = size * (0.6 + (p1.p||0.5));
-    ctx.beginPath();
-    ctx.moveTo(p0.x*w, p0.y*h);
-    ctx.lineTo(p1.x*w, p1.y*h);
-    ctx.stroke();
+    ctx.lineJoin = "round"; ctx.lineCap = "round";
+    fn(w, h);
     ctx.restore();
+  }
+  function pushAndRender(pt){
+    current.pts.push(pt);
+    const pts = current.pts, n = pts.length;
+    if(n===2){
+      withCtx((w,h)=>drawTailGeom(ctx, pts[0], pts[1], current.color, current.size, w, h));
+    } else if(n>=3){
+      withCtx((w,h)=>drawCurveGeom(ctx, curveSegmentGeom(pts, n-2), current.color, current.size, w, h));
+    }
+  }
+  function finalizeStroke(){
+    const pts = current.pts;
+    if(pts.length===1){
+      withCtx((w,h)=>drawDot(ctx, pts[0], current.color, current.size, w, h));
+    } else if(pts.length>=3){
+      withCtx((w,h)=>drawTailGeom(ctx, midPt(pts[pts.length-2],pts[pts.length-1]), pts[pts.length-1], current.color, current.size, w, h));
+    }
   }
   function eraseAt(pt){
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -825,33 +883,62 @@ function createInk(canvas){
     if(strokes.length!==before){ redraw(); onChange(); }
   }
   function pointerDown(e){
-    activeInk = api;
+    canvas.style.transition = "";
+    pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
     try{ canvas.setPointerCapture(e.pointerId); }catch(err){}
-    const pt = toLocal(e);
-    if(toolState.mode==="eraser"){ eraseAt(pt); }
-    else { current = {color:toolState.color, size:toolState.size, pts:[pt]}; }
+    if(pointers.size===1){
+      primaryId = e.pointerId;
+      activeInk = api;
+      const pt = toLocal(e);
+      if(toolState.mode==="eraser"){ eraseAt(pt); }
+      else { current = {color:toolState.color, size:toolState.size, pts:[pt]}; }
+    } else if(pointers.size===2 && (!current || current.pts.length<=1)){
+      current = null;
+      const [p1,p2] = Array.from(pointers.values());
+      pinch = {
+        startDist: Math.hypot(p2.x-p1.x, p2.y-p1.y) || 1,
+        startScale: view.scale, startViewX: view.x, startViewY: view.y,
+        startMid: {x:(p1.x+p2.x)/2, y:(p1.y+p2.y)/2}
+      };
+    }
     e.preventDefault();
   }
   function pointerMove(e){
+    if(!pointers.has(e.pointerId)){ e.preventDefault(); return; }
+    pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if(pinch && pointers.size===2){
+      const [p1,p2] = Array.from(pointers.values());
+      const dist = Math.hypot(p2.x-p1.x, p2.y-p1.y) || 1;
+      const mid = {x:(p1.x+p2.x)/2, y:(p1.y+p2.y)/2};
+      view.scale = Math.min(3, Math.max(1, pinch.startScale * (dist/pinch.startDist)));
+      view.x = pinch.startViewX + (mid.x - pinch.startMid.x);
+      view.y = pinch.startViewY + (mid.y - pinch.startMid.y);
+      applyView();
+      e.preventDefault();
+      return;
+    }
+    if(e.pointerId!==primaryId) { e.preventDefault(); return; }
     if(e.buttons===0) return;
     if(toolState.mode==="eraser"){ eraseAt(toLocal(e)); e.preventDefault(); return; }
     if(current){
       const events = (typeof e.getCoalescedEvents==="function" && e.getCoalescedEvents()) || [e];
-      events.forEach(ev=>{
-        const pt = toLocal(ev);
-        const prev = current.pts[current.pts.length-1];
-        current.pts.push(pt);
-        drawSegment(prev, pt, current.color, current.size);
-      });
+      events.forEach(ev=>{ pushAndRender(toLocal(ev)); });
     }
     e.preventDefault();
   }
-  function pointerUp(){
-    if(current){
-      if(current.pts.length>1) getStrokes().push(current);
-      current = null;
-      onChange();
+  function pointerUp(e){
+    pointers.delete(e.pointerId);
+    if(pinch && pointers.size<2){ pinch = null; }
+    if(e.pointerId===primaryId){
+      primaryId = null;
+      if(current){
+        finalizeStroke();
+        getStrokes().push(current);
+        current = null;
+        onChange();
+      }
     }
+    if(pointers.size===0) resetView();
   }
   canvas.addEventListener("pointerdown", pointerDown);
   canvas.addEventListener("pointermove", pointerMove);
@@ -859,7 +946,11 @@ function createInk(canvas){
   canvas.addEventListener("pointercancel", pointerUp);
 
   const api = {
-    bind(getFn, onChangeFn){ getStrokes = getFn; onChange = onChangeFn || (()=>{}); current = null; resize(); },
+    bind(getFn, onChangeFn){
+      getStrokes = getFn; onChange = onChangeFn || (()=>{}); current = null;
+      pointers.clear(); primaryId = null; pinch = null; resetView();
+      resize();
+    },
     resize, redraw,
     undo(){ getStrokes().pop(); redraw(); onChange(); },
     clear(){ getStrokes().length = 0; redraw(); onChange(); }
