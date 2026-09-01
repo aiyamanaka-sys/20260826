@@ -6,49 +6,44 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Life List</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap">
+<title>Bucket List</title>
 <style>
   :root{
-    --bg:#fffaf0;
+    --bg:#f7f7f5;
     --surface:#ffffff;
-    --surface-alt:#fff1de;
-    --text:#2b2140;
-    --sub:#6f6488;
-    --border:#f0dfc4;
-    --accent:#ce4038;
-    --accent-soft:#ffe3e3;
-    --mustard:#9a6b00;
-    --ink:#10786d;
-    --grape:#7c4dff;
-    --done:#10786d;
-    --shadow-sm:0 2px 8px rgba(43,33,64,0.06);
-    --shadow-md:0 14px 32px rgba(43,33,64,0.14);
-    --radius:20px;
-    --rule-line:rgba(155,107,255,0.18);
-    --rule-margin:rgba(255,107,107,0.35);
-    --font-serif:"M PLUS Rounded 1c","Hiragino Sans","Yu Gothic",sans-serif;
-    --font-display:"Fredoka",var(--font-serif);
-    --font-label:"M PLUS Rounded 1c",sans-serif;
-    --font-en-serif:"Fredoka",var(--font-serif);
-    --bounce:cubic-bezier(.34,1.56,.64,1);
+    --surface-alt:#f2f2f0;
+    --text:#1d1d1f;
+    --sub:#6e6e73;
+    --border:#e5e5e3;
+    --accent:#2563eb;
+    --accent-soft:#eaf1ff;
+    --done:#2563eb;
+    --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md:0 16px 40px rgba(0,0,0,0.14);
+    --radius:10px;
+    --rule-line:rgba(37,99,235,0.14);
+    --rule-margin:rgba(229,72,77,0.35);
+    /* No webfont: leaning on the OS's own system font is itself the
+       Apple/Notion signal — both rely on native type rather than a loaded
+       display face, which is also the fastest and most legible choice for
+       dense Japanese UI text. */
+    --font-serif:-apple-system,BlinkMacSystemFont,"SF Pro JP","Hiragino Sans","Yu Gothic",sans-serif;
+    --font-display:var(--font-serif);
+    --font-label:var(--font-serif);
+    --font-en-serif:var(--font-serif);
+    --ease:cubic-bezier(.4,0,.2,1);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{margin:0;height:100%;color:var(--text);
-    background:
-      radial-gradient(ellipse 90% 50% at 15% -10%, rgba(255,107,107,0.10), transparent 60%),
-      radial-gradient(ellipse 80% 50% at 100% 0%, rgba(155,107,255,0.09), transparent 55%),
-      var(--bg);
-    font-family:"M PLUS Rounded 1c",-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    background:var(--bg);
+    font-family:var(--font-serif);
+    font-variant-numeric:tabular-nums;
     overscroll-behavior:none;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
   @media (prefers-reduced-motion: reduce){
-    :root{ --bounce:ease; }
-    .icon-btn:active{transform:scale(0.96);}
-    .home-card:active{transform:scale(0.98);}
-    .item-row.done .item-num{transform:none;}
+    :root{ --ease:linear; }
+    .icon-btn:active{transform:scale(0.97);}
+    .home-card:active{transform:none;}
   }
   input, textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
   button{font-family:inherit;}
@@ -69,25 +64,21 @@
     padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:var(--surface);border-bottom:1px solid var(--border);
     flex:none;
   }
-  .topbar::after{
-    content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;
-    background:repeating-linear-gradient(90deg, var(--accent) 0 10px, transparent 10px 18px);
-    opacity:.5;
-  }
-  .brand{font-size:16px;font-weight:800;display:flex;align-items:center;gap:9px;}
+  .brand{font-size:16px;font-weight:700;display:flex;align-items:center;gap:9px;}
   .brand .icon{color:var(--accent);}
   .brand-text{display:flex;flex-direction:column;line-height:1.1;}
-  .brand-name{font-family:var(--font-display);font-weight:400;font-size:19px;letter-spacing:0.01em;color:var(--text);}
-  .brand-tag{font-family:var(--font-label);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--sub);}
+  .brand-name{font-family:var(--font-display);font-weight:700;font-size:17px;letter-spacing:-0.01em;color:var(--text);}
+  .brand-tag{font-family:var(--font-label);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--sub);}
   .topbar-actions{display:flex;gap:6px;}
   .icon-btn{
-    border:none;background:var(--surface-alt);color:var(--text);width:36px;height:36px;
-    border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    border:none;background:var(--surface-alt);color:var(--text);width:34px;height:34px;
+    border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
-    transition:transform .18s var(--bounce);
+    transition:transform .12s var(--ease),background .12s var(--ease);
   }
-  .icon-btn.primary{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(206,64,56,0.4);}
-  .icon-btn:active{transform:scale(0.88) rotate(-4deg);}
+  .icon-btn.primary{background:var(--accent);color:#fff;}
+  .icon-btn:active{transform:scale(0.94);background:var(--border);}
+  .icon-btn.primary:active{background:var(--accent);opacity:.85;}
   .save-status{font-size:11px;color:var(--sub);text-align:right;padding:2px 16px;flex:none;}
   .save-status a{color:var(--accent);font-weight:700;}
 
@@ -105,19 +96,14 @@
   }
   .tab{
     flex:1;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;
-    gap:2px;padding:6px 2px;border-radius:14px;color:var(--sub);cursor:pointer;font-size:11px;
+    gap:2px;padding:6px 2px;border-radius:9px;color:var(--sub);cursor:pointer;font-size:11px;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
-    transition:transform .18s var(--bounce),color .12s ease,background .12s ease;
+    transition:color .12s var(--ease),background .12s var(--ease);
   }
-  .tab-label{white-space:nowrap;font-weight:600;}
-  .tab.active{color:var(--accent);background:var(--accent-soft);transform:translateY(-1px);}
-  .tab:active{transform:scale(0.92);}
-  /* Match each tab's active color to its section's identity on the home
-     cards (① list = coral, ② map = turquoise, ③ diary = grape) so the same
-     color-coding that teaches wayfinding on the home screen still holds
-     once you're inside a section, not just coral everywhere. */
-  .tab[data-view="map"].active{color:var(--ink);background:#e0f8f4;}
-  .tab[data-view="diary"].active{color:var(--grape);background:#f1eaff;}
+  .tab-label{white-space:nowrap;font-weight:500;}
+  .tab.active{color:var(--accent);}
+  .tab.active .tab-label{font-weight:600;}
+  .tab:active{background:var(--surface-alt);}
 
   @media (max-height:850px){
     .topbar{padding-top:calc(6px + env(safe-area-inset-top));padding-bottom:6px;}
@@ -131,23 +117,29 @@
     background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:10px;
     padding:10px 12px;font-size:12px;color:var(--text);line-height:1.65;margin:0 0 16px;
   }
-  .home-cards{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+  .home-cards{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
   .home-card{
-    --card-accent:var(--accent); --card-soft:var(--accent-soft);
-    background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--card-accent);
-    border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);cursor:pointer;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-sm);cursor:pointer;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
-    transition:transform .2s var(--bounce),box-shadow .2s ease;
+    transition:background .15s var(--ease),border-color .15s var(--ease);
   }
-  .home-card:active{transform:scale(0.97) rotate(-0.6deg);}
-  .home-card:nth-of-type(2){--card-accent:var(--ink); --card-soft:#e0f8f4;}
-  .home-card:nth-of-type(3){--card-accent:var(--grape); --card-soft:#f1eaff;}
+  .home-card:active{background:var(--surface-alt);}
   .home-icon-tile{
-    width:46px;height:46px;border-radius:16px;background:var(--card-soft);color:var(--card-accent);
+    width:36px;height:36px;border-radius:9px;background:var(--surface-alt);color:var(--text);
     display:flex;align-items:center;justify-content:center;margin-bottom:10px;
   }
-  .home-card h2{margin:0 0 4px;font-size:16px;font-family:var(--font-display);font-weight:600;letter-spacing:0.02em;color:var(--card-accent);}
+  .home-card h2{margin:0 0 4px;font-size:15px;font-family:var(--font-display);font-weight:600;letter-spacing:-0.01em;color:var(--text);}
   .home-card p{margin:0;font-size:12.5px;color:var(--sub);line-height:1.6;}
+  /* The signature move: rather than color-coding each section (which would
+     need more than the one accent this direction allows), the list card
+     shows the one piece of information a wish list actually wants
+     surfaced up front — how many of the 100 are already done — the way
+     Notion surfaces a rollup and iOS surfaces a completed-count. */
+  .home-progress{display:flex;align-items:center;gap:8px;margin-top:10px;}
+  .home-progress-track{flex:1;height:4px;border-radius:2px;background:var(--border);overflow:hidden;}
+  .home-progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s var(--ease);}
+  .home-progress-label{font-size:11px;color:var(--sub);font-variant-numeric:tabular-nums;flex:none;}
 
   /* ---- popover (settings) ---- */
   .popover{
@@ -187,30 +179,19 @@
   /* ---- list ---- */
   .item-row{
     display:flex;align-items:center;gap:10px;background:var(--surface);
-    border:1px solid var(--border);border-radius:16px;padding:8px 10px;margin-bottom:7px;cursor:pointer;
-    transition:transform .15s var(--bounce);
+    border-bottom:1px solid var(--border);padding:10px 4px;cursor:pointer;
+    transition:background .12s var(--ease);
   }
-  .item-row:active{transform:scale(0.98);}
-  .item-row.done{background:var(--accent-soft);}
-  /* Each of the 100 wishes gets a sticker in one of four pop colors, cycling
-     in sequence — pale/outlined while open, a saturated gradient "shiny
-     sticker" once achieved. Progress becomes visible as color, not just a
-     checkmark. */
+  .item-row:active{background:var(--surface-alt);}
+  .item-row.done{background:transparent;}
+  .item-row.done .item-title-label,.item-row.done .item-status{color:var(--sub);}
   .item-num{
-    --sticker:var(--accent); --sticker-soft:var(--accent-soft);
-    width:32px;height:32px;flex:none;border-radius:11px;background:var(--sticker-soft);color:var(--sticker);
-    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;position:relative;
-    font-family:var(--font-en-serif);border:1.5px solid var(--sticker);
-    transition:transform .35s var(--bounce),background .25s ease,box-shadow .25s ease;
+    width:28px;height:28px;flex:none;border-radius:8px;background:var(--surface-alt);color:var(--sub);
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;position:relative;
+    font-family:var(--font-en-serif);
+    transition:background .15s var(--ease),color .15s var(--ease);
   }
-  .item-row:nth-child(4n+2) .item-num{--sticker:var(--ink); --sticker-soft:#e0f8f4;}
-  .item-row:nth-child(4n+3) .item-num{--sticker:var(--grape); --sticker-soft:#f1eaff;}
-  .item-row:nth-child(4n+4) .item-num{--sticker:var(--mustard); --sticker-soft:#fff3d6;}
-  .item-row.done .item-num{
-    background:linear-gradient(145deg, var(--sticker), color-mix(in srgb, var(--sticker) 70%, #fff 10%));
-    color:#fff;border-color:transparent;transform:scale(1.08) rotate(-4deg);
-    box-shadow:0 3px 10px color-mix(in srgb, var(--sticker) 50%, transparent);
-  }
+  .item-row.done .item-num{background:var(--accent);color:#fff;}
   .item-row input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--accent);}
   .item-preview{
     flex:1;min-width:0;height:52px;border-radius:9px;background:var(--surface-alt);overflow:hidden;
@@ -220,7 +201,7 @@
   .item-title-label.show{display:block;}
   .item-status{font-size:12px;color:var(--sub);opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .item-meta{flex:none;display:flex;flex-direction:column;gap:2px;align-items:flex-end;}
-  .pill{font-size:10px;color:var(--mustard);white-space:nowrap;display:flex;align-items:center;gap:3px;font-family:var(--font-en-serif);}
+  .pill{font-size:10px;color:var(--sub);white-space:nowrap;display:flex;align-items:center;gap:3px;font-family:var(--font-en-serif);}
   .pill.pill-done{color:var(--accent);}
 
   /* ---- modal ---- */
@@ -230,7 +211,7 @@
   }
   .modal-backdrop.hidden{display:none;}
   .modal-card{
-    background:var(--surface);border-radius:20px;width:100%;max-width:520px;max-height:92vh;overflow:auto;
+    background:var(--surface);border-radius:16px;width:100%;max-width:520px;max-height:92vh;overflow:auto;
     padding:16px;box-shadow:var(--shadow-md);
   }
   .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -265,19 +246,19 @@
   .map-tray-label{font-size:11px;color:var(--sub);margin-bottom:6px;}
   .map-tray{
     display:flex;gap:8px;overflow-x:auto;padding:10px;background:var(--surface);border:1.5px dashed var(--border);
-    border-radius:14px;min-height:58px;margin-bottom:14px;align-items:center;
+    border-radius:10px;min-height:58px;margin-bottom:14px;align-items:center;
   }
   .map-tray:empty::after{content:"すべて配置済みです";color:var(--sub);font-size:12px;}
   .tray-chip{
-    flex:none;width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;
-    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;cursor:grab;
+    flex:none;width:38px;height:38px;border-radius:50%;background:var(--sub);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;cursor:grab;
     touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
   }
   .tray-chip.done{background:var(--done);}
   .tray-chip.dragging{opacity:0.3;}
   .drag-ghost{
-    position:fixed;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;
-    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;
+    position:fixed;width:34px;height:34px;border-radius:50%;background:var(--sub);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;
     pointer-events:none;z-index:200;box-shadow:0 6px 16px rgba(0,0,0,.3);transform:translate(-50%,-50%);
   }
   .drag-ghost.done{background:var(--done);}
@@ -297,8 +278,8 @@
   .axis-label.left{left:10px;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;}
   .axis-label.right{right:10px;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;}
   .map-dot{
-    position:absolute;width:30px;height:30px;border-radius:50%;background:var(--accent);
-    color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;
+    position:absolute;width:30px;height:30px;border-radius:50%;background:var(--sub);
+    color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;
     transform:translate(-50%,-50%);cursor:grab;box-shadow:0 2px 6px rgba(0,0,0,.25);
     user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
     touch-action:none;
@@ -311,7 +292,7 @@
 
   /* ---- diary ---- */
   .diary-title-row{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;cursor:pointer;flex-wrap:wrap;flex:none;}
-  .diary-title-num{font-size:12px;font-weight:700;color:var(--grape);background:#f1eaff;padding:4px 9px;border-radius:8px;flex:none;font-family:var(--font-en-serif);}
+  .diary-title-num{font-size:12px;font-weight:600;color:var(--sub);background:var(--surface-alt);padding:4px 9px;border-radius:7px;flex:none;font-family:var(--font-en-serif);}
   .diary-title-text{font-size:19px;font-weight:600;color:var(--text);font-family:var(--font-serif);letter-spacing:0.02em;}
   .diary-title-text.placeholder{color:var(--sub);font-weight:600;font-style:italic;font-size:13px;}
   .diary-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;flex:none;}
@@ -379,7 +360,7 @@
     <div class="brand">
       <svg class="icon"><use href="#icon-compass"></use></svg>
       <span class="brand-text">
-        <span class="brand-name">Life List</span>
+        <span class="brand-name">Bucket List</span>
         <span class="brand-tag">One Hundred Wishes</span>
       </span>
     </div>
@@ -408,6 +389,10 @@
           <div class="home-icon-tile"><svg class="icon icon-lg"><use href="#icon-checklist"></use></svg></div>
           <h2>① やりたいことリスト</h2>
           <p>100個、番号付きで手書き記入。タップすると詳細・記入日・達成目標日・達成日を編集できます。</p>
+          <div class="home-progress">
+            <div class="home-progress-track"><div class="home-progress-fill" id="homeProgressFill"></div></div>
+            <span class="home-progress-label" id="homeProgressLabel">0 / 100</span>
+          </div>
         </div>
         <div class="home-card" data-goto="map">
           <div class="home-icon-tile"><svg class="icon icon-lg"><use href="#icon-grid"></use></svg></div>
@@ -440,7 +425,7 @@
         <div class="axis-label right">時間がかかる</div>
       </div>
       <div class="map-legend">
-        <span><span class="dot-swatch" style="background:var(--accent)"></span>未達成</span>
+        <span><span class="dot-swatch" style="background:var(--sub)"></span>未達成</span>
         <span><span class="dot-swatch" style="background:var(--done)"></span>達成済み</span>
       </div>
     </section>
@@ -518,18 +503,18 @@ const THEME_KEY = "bucketlist_theme_v1";
 const ITEM_COUNT = 100;
 const DIARY_COUNT = 100;
 
-/* accent values are chosen to keep >=4.5:1 contrast against a white/cream
-   surface, since --accent doubles as text/icon color (home headings, tab
-   labels, pills) as well as a button-fill behind white icons — the vivid
-   pastel versions of these hues look great as backgrounds but are too
-   light to read as text or to hold a white icon on top of. */
+/* One muted accent at a time, in the spirit of Notion's own page-color
+   picker — a single considered hue rather than a rainbow. Each value keeps
+   >=4.5:1 contrast against a white surface, since --accent doubles as
+   text/icon color (headings, tab labels, pills) as well as a button-fill
+   behind a white icon. */
 const THEMES = [
-  {key:"coral",     name:"コーラル",     accent:"#ce4038", soft:"#ffe3e3"},
-  {key:"turquoise", name:"ターコイズ",   accent:"#10786d", soft:"#e0f8f4"},
-  {key:"grape",     name:"グレープ",     accent:"#7c4dff", soft:"#f1eaff"},
-  {key:"sunshine",  name:"サンシャイン", accent:"#9a6b00", soft:"#fff3d6"},
-  {key:"berry",     name:"ベリー",       accent:"#d81e73", soft:"#ffe0f0"},
-  {key:"sky",       name:"スカイ",       accent:"#0369a1", soft:"#e2f2ff"}
+  {key:"blue",   name:"ブルー",   accent:"#2563eb", soft:"#eaf1ff"},
+  {key:"slate",  name:"スレート", accent:"#475569", soft:"#eef1f4"},
+  {key:"green",  name:"グリーン", accent:"#15803d", soft:"#e6f6ec"},
+  {key:"red",    name:"レッド",   accent:"#dc2626", soft:"#fdecec"},
+  {key:"purple", name:"パープル", accent:"#9333ea", soft:"#f3e8fd"},
+  {key:"orange", name:"オレンジ", accent:"#c2410c", soft:"#fdf0e6"}
 ];
 const PEN_COLORS = [
   {key:"black", c:"#1c1c1c"},
@@ -734,7 +719,7 @@ function applyTheme(key){
 }
 function buildThemeGrid(){
   const grid = document.getElementById("themeGrid");
-  const current = (function(){ try{ return localStorage.getItem(THEME_KEY); }catch(e){ return null; } })() || "rust";
+  const current = (function(){ try{ return localStorage.getItem(THEME_KEY); }catch(e){ return null; } })() || "blue";
   THEMES.forEach(t=>{
     const sw = document.createElement("div");
     sw.className = "theme-swatch" + (t.key===current ? " on" : "");
@@ -855,16 +840,35 @@ function createInk(canvas){
   const pointerTypes = new Map();
   let primaryId = null;
   let pinch = null;
+  // pinch itself is nulled as soon as the gesture drops below 2 pointers
+  // (i.e. on the FIRST finger's pointerup), so by the time the SECOND
+  // finger's pointerup brings pointers.size to 0, `pinch` is already gone.
+  // hadPinch survives across both pointerups so we can still tell, once
+  // everything is lifted, that this interaction was a pinch at all.
+  let hadPinch = false;
   let view = {scale:1, x:0, y:0};
 
+  let resetPending = false;
   function applyView(){
     canvas.style.transform = "translate("+view.x+"px,"+view.y+"px) scale("+view.scale+")";
   }
-  function resetView(){
-    canvas.style.transition = "transform .2s ease";
+  // animate=true is used when the user has just let go of a pinch that
+  // ended close to standard size, so the last bit of zoom eases away
+  // instead of snapping. animate=false forces the view to standard size
+  // immediately, with no transition — used when a new stroke starts while
+  // a previous snap-back is still mid-flight, so that stroke's coordinates
+  // (read live from getBoundingClientRect, which reflects whatever the
+  // transform happens to be at that instant) are never computed against a
+  // canvas that's mid-animation between two different sizes.
+  function resetView(animate){
+    canvas.style.transition = animate ? "transform .25s ease" : "";
+    resetPending = !!animate;
     view = {scale:1, x:0, y:0};
     applyView();
   }
+  canvas.addEventListener("transitionend", (e)=>{
+    if(e.propertyName==="transform") resetPending = false;
+  });
 
   function resize(){ sizeCanvas(canvas); redraw(); }
   function redraw(){
@@ -920,6 +924,11 @@ function createInk(canvas){
     if(strokes.length!==before){ redraw(); onChange(); }
   }
   function pointerDown(e){
+    // If a snap-back-to-standard-size animation is still playing when a new
+    // stroke starts, finish it instantly rather than let this stroke begin
+    // mid-transition — otherwise every coordinate read for it would land
+    // against a canvas that's a different size by the time the stroke ends.
+    if(resetPending){ resetView(false); }
     // Palm rejection: while a pen stroke is in progress, ignore any touch
     // pointer (a resting palm) so it can't hijack the gesture or start a
     // spurious second stroke. Don't reject the reverse (touch drawing is
@@ -939,6 +948,7 @@ function createInk(canvas){
       else { current = {color:toolState.color, size:toolState.size, pts:[pt]}; }
     } else if(pointers.size===2 && e.pointerType!=="pen" && pointerTypes.get(primaryId)!=="pen" && (!current || current.pts.length<=1)){
       current = null;
+      hadPinch = true;
       const [p1,p2] = Array.from(pointers.values());
       pinch = {
         startDist: Math.hypot(p2.x-p1.x, p2.y-p1.y) || 1,
@@ -976,29 +986,55 @@ function createInk(canvas){
     pointerTypes.delete(e.pointerId);
     if(pinch && pointers.size<2){ pinch = null; }
     if(e.pointerId===primaryId){
-      primaryId = null;
-      if(current){
-        finalizeStroke();
-        getStrokes().push(current);
+      // Release the "a stroke is in progress" state (primaryId/current)
+      // in a finally block so it happens no matter what — including a
+      // pointercancel fired mid-stroke by the OS/browser, or an error
+      // inside finalizeStroke/onChange. Whatever the input source (mouse,
+      // touch, or pen) and whichever of pointerup/pointercancel/
+      // lostpointercapture triggered this, a half-finished stroke must
+      // never leave the pen "stuck down" for the next pointerdown.
+      try{
+        if(current){
+          finalizeStroke();
+          getStrokes().push(current);
+          onChange();
+        }
+      } finally {
+        primaryId = null;
         current = null;
-        onChange();
       }
     }
-    // No auto-reset of the zoom here: pinch-zoom is meant to persist across
-    // strokes so the user can zoom in, write several strokes at that scale,
-    // then pinch back out themselves when done. Resetting on every
-    // pointerup (as this used to do) snapped the view back mid-write,
-    // which is what made a second stroke land in the wrong place.
+    // Pinch-zoom persists across strokes by design — the user can zoom in,
+    // write several strokes at that scale, then pinch back out themselves.
+    // The one case we finish for them: they *did* pinch back down close to
+    // standard size and let go both fingers. Snapping the last little bit
+    // closed means the page settles back onto its ruled lines exactly,
+    // instead of parking at 1.03x/2px-off forever. If they're still
+    // meaningfully zoomed in, leave the view alone — they're still writing
+    // at that size. This has to key off pointers.size===0 (every finger up),
+    // not the pinch variable itself — pinch is already cleared the moment
+    // the FIRST finger lifts (see above), which happens before the second
+    // finger's pointerup is what actually brings pointers.size to 0.
+    if(hadPinch && pointers.size===0){
+      hadPinch = false;
+      if(view.scale<=1.08){ resetView(true); }
+    }
   }
   canvas.addEventListener("pointerdown", pointerDown);
   canvas.addEventListener("pointermove", pointerMove);
   canvas.addEventListener("pointerup", pointerUp);
   canvas.addEventListener("pointercancel", pointerUp);
+  // Defensive backstop: if the browser/OS ever revokes pointer capture
+  // without sending pointerup/pointercancel first (allowed by the spec in
+  // edge cases, e.g. certain drag-and-drop or permission-prompt
+  // interruptions), route it through the same cleanup so state can't get
+  // stuck mid-stroke.
+  canvas.addEventListener("lostpointercapture", pointerUp);
 
   const api = {
     bind(getFn, onChangeFn){
       getStrokes = getFn; onChange = onChangeFn || (()=>{}); current = null;
-      pointers.clear(); primaryId = null; pinch = null; resetView();
+      pointers.clear(); primaryId = null; pinch = null; hadPinch = false; resetView(false);
       resize();
     },
     resize, redraw,
@@ -1063,10 +1099,19 @@ function buildPenToolbar(container){
 const listContainer = document.getElementById("listContainer");
 const rowRefs = {};
 
+function updateHomeProgress(){
+  const fill = document.getElementById("homeProgressFill");
+  const label = document.getElementById("homeProgressLabel");
+  if(!fill || !label) return;
+  const done = state.items.filter(it=>it.checked).length;
+  fill.style.width = (done / ITEM_COUNT * 100) + "%";
+  label.textContent = done + " / " + ITEM_COUNT;
+}
 function refreshRow(id){
   const item = state.items.find(it=>it.id===id);
   const ref = rowRefs[id];
   if(!item || !ref) return;
+  updateHomeProgress();
   ref.row.classList.toggle("done", item.checked);
   ref.cb.checked = item.checked;
   ref.titleEl.textContent = item.title || "";
