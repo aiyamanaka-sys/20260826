@@ -929,6 +929,18 @@ function createInk(canvas){
     // mid-transition — otherwise every coordinate read for it would land
     // against a canvas that's a different size by the time the stroke ends.
     if(resetPending){ resetView(false); }
+    // A stylus can only touch the screen in one place at a time. If a new
+    // pen contact arrives while we still think a *different* pen pointerId
+    // is down, that old contact's pointerup/pointercancel never reached us
+    // — a real (if rare) reliability gap in iPadOS Safari's Pencil event
+    // delivery. Recover here rather than leave every pointermove for this
+    // new stroke silently ignored, since below only accepts move events
+    // whose pointerId matches `primaryId` — and without this, primaryId
+    // would still be the previous, now-dead pointerId, so the *second*
+    // stroke drawn with the same pencil would never render.
+    if(e.pointerType==="pen" && primaryId!==null && primaryId!==e.pointerId && pointerTypes.get(primaryId)==="pen"){
+      forceEndStroke(primaryId);
+    }
     // Palm rejection: while a pen stroke is in progress, ignore any touch
     // pointer (a resting palm) so it can't hijack the gesture or start a
     // spurious second stroke. Don't reject the reverse (touch drawing is
@@ -976,23 +988,28 @@ function createInk(canvas){
     if(e.buttons===0) return;
     if(toolState.mode==="eraser"){ eraseAt(toLocal(e)); e.preventDefault(); return; }
     if(current){
-      const events = (typeof e.getCoalescedEvents==="function" && e.getCoalescedEvents()) || [e];
+      // An array is always truthy in JS even when empty, so `coalesced || [e]`
+      // would silently drop this point if getCoalescedEvents() ever returned
+      // [] instead of throwing/not-existing — check .length, not truthiness.
+      const coalesced = typeof e.getCoalescedEvents==="function" ? e.getCoalescedEvents() : null;
+      const events = (coalesced && coalesced.length) ? coalesced : [e];
       events.forEach(ev=>{ pushAndRender(toLocal(ev)); });
     }
     e.preventDefault();
   }
-  function pointerUp(e){
-    pointers.delete(e.pointerId);
-    pointerTypes.delete(e.pointerId);
+  function forceEndStroke(id){
+    // Shared cleanup for "this pointerId is done" — used by the real
+    // pointerup/pointercancel/lostpointercapture handlers below, and also
+    // called defensively from pointerDown when a new pen contact proves a
+    // previous one must have already ended even though its own end event
+    // never arrived. Release the "a stroke is in progress" state
+    // (primaryId/current) in a finally block so it happens no matter what,
+    // including an error inside finalizeStroke/onChange — a half-finished
+    // stroke must never leave the pen "stuck down" for the next pointerdown.
+    pointers.delete(id);
+    pointerTypes.delete(id);
     if(pinch && pointers.size<2){ pinch = null; }
-    if(e.pointerId===primaryId){
-      // Release the "a stroke is in progress" state (primaryId/current)
-      // in a finally block so it happens no matter what — including a
-      // pointercancel fired mid-stroke by the OS/browser, or an error
-      // inside finalizeStroke/onChange. Whatever the input source (mouse,
-      // touch, or pen) and whichever of pointerup/pointercancel/
-      // lostpointercapture triggered this, a half-finished stroke must
-      // never leave the pen "stuck down" for the next pointerdown.
+    if(id===primaryId){
       try{
         if(current){
           finalizeStroke();
@@ -1004,6 +1021,9 @@ function createInk(canvas){
         current = null;
       }
     }
+  }
+  function pointerUp(e){
+    forceEndStroke(e.pointerId);
     // Pinch-zoom persists across strokes by design — the user can zoom in,
     // write several strokes at that scale, then pinch back out themselves.
     // The one case we finish for them: they *did* pinch back down close to
