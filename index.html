@@ -1044,6 +1044,15 @@ function createInk(canvas){
   canvas.addEventListener("pointermove", pointerMove);
   canvas.addEventListener("pointerup", pointerUp);
   canvas.addEventListener("pointercancel", pointerUp);
+  // iPadOS's Scribble (handwriting-to-text) is a system feature that
+  // watches Apple Pencil input and can swallow PointerEvents outright when
+  // it thinks a stroke might be text entry — CSS touch-action:none is not
+  // enough to stop it, but it backs off once something explicitly
+  // preventDefaults the matching touch events. This only affects the pen
+  // (Scribble doesn't watch finger touches), which is exactly why drawing
+  // with a finger has been fine while the Pencil drops strokes.
+  canvas.addEventListener("touchstart", (e)=>e.preventDefault(), {passive:false});
+  canvas.addEventListener("touchmove", (e)=>e.preventDefault(), {passive:false});
   // Defensive backstop: if the browser/OS ever revokes pointer capture
   // without sending pointerup/pointercancel first (allowed by the spec in
   // edge cases, e.g. certain drag-and-drop or permission-prompt
@@ -1061,6 +1070,24 @@ function createInk(canvas){
     undo(){ getStrokes().pop(); redraw(); onChange(); },
     clear(){ getStrokes().length = 0; redraw(); onChange(); }
   };
+  // The diary canvases sit inside nested flexbox columns (height:100% down
+  // several levels) whose final size isn't known until the browser finishes
+  // laying out the newly-shown view — often a frame or more after the
+  // requestAnimationFrame that calls bind()/resize() below. sizeCanvas()
+  // allocates the canvas's actual pixel buffer from clientWidth/clientHeight
+  // at the moment it runs; if that runs before the flexbox settles, the
+  // buffer ends up smaller than the box the browser later stretches it
+  // into, so a point drawn using the (correct, later) live clientHeight
+  // lands somewhere other than the physical position under the pen —
+  // exactly the "drawn several lines above where I touched" symptom. A
+  // plain window "resize" listener doesn't catch this, because the window
+  // itself never resizes when switching tabs — only this element does.
+  // ResizeObserver reliably fires whenever the canvas's own rendered box
+  // changes for any reason (layout settling, tab switch, orientation).
+  if(typeof ResizeObserver === "function"){
+    const ro = new ResizeObserver(()=>resize());
+    ro.observe(canvas);
+  }
   window.addEventListener("resize", resize);
   return api;
 }
