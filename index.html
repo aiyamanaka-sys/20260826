@@ -18,6 +18,8 @@
     --accent:#2563eb;
     --accent-soft:#eaf1ff;
     --done:#2563eb;
+    --danger:#dc2626;
+    --danger-soft:#fdecec;
     --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
     --shadow-md:0 16px 40px rgba(0,0,0,0.14);
     --radius:10px;
@@ -156,6 +158,10 @@
   .theme-swatch.on{box-shadow:0 0 0 2px var(--text);}
   .theme-swatch.on::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;}
 
+  /* ---- list toolbar ---- */
+  .list-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .list-toolbar-label{font-size:12px;color:var(--sub);}
+
   /* ---- ink toolbar (shared) ---- */
   .ink-toolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
   .mode-group{display:flex;background:var(--surface-alt);border-radius:10px;padding:3px;gap:2px;}
@@ -184,6 +190,7 @@
   }
   .item-row:active{background:var(--surface-alt);}
   .item-row.done{background:transparent;}
+  .item-row.overdue{background:var(--danger-soft);}
   .item-row.done .item-title-label,.item-row.done .item-status{color:var(--sub);}
   .item-num{
     width:28px;height:28px;flex:none;border-radius:8px;background:var(--surface-alt);color:var(--sub);
@@ -192,6 +199,7 @@
     transition:background .15s var(--ease),color .15s var(--ease);
   }
   .item-row.done .item-num{background:var(--accent);color:#fff;}
+  .item-num.overdue{background:var(--danger-soft);color:var(--danger);}
   .item-row input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--accent);}
   .item-preview{
     flex:1;min-width:0;height:52px;border-radius:9px;background:var(--surface-alt);overflow:hidden;
@@ -203,6 +211,8 @@
   .item-meta{flex:none;display:flex;flex-direction:column;gap:2px;align-items:flex-end;}
   .pill{font-size:10px;color:var(--sub);white-space:nowrap;display:flex;align-items:center;gap:3px;font-family:var(--font-en-serif);}
   .pill.pill-done{color:var(--accent);}
+  .pill.pill-score{color:var(--text);font-weight:600;background:var(--surface-alt);padding:2px 7px;border-radius:6px;}
+  .pill.pill-overdue{color:var(--danger);font-weight:700;}
 
   /* ---- modal ---- */
   .modal-backdrop{
@@ -233,7 +243,6 @@
     touch-action:none;border-radius:10px;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
   }
-  canvas.modal-canvas{display:block;width:100%;height:260px;background:#fff;border:1px solid var(--border);}
   .date-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
   .date-grid label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--sub);}
   .date-grid input[type=date]{
@@ -255,6 +264,7 @@
     touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
   }
   .tray-chip.done{background:var(--done);}
+  .tray-chip.overdue{box-shadow:0 0 0 2px var(--danger);}
   .tray-chip.dragging{opacity:0.3;}
   .drag-ghost{
     position:fixed;width:34px;height:34px;border-radius:50%;background:var(--sub);color:#fff;
@@ -286,6 +296,7 @@
   }
   .map-dot.dragging{opacity:0.3;}
   .map-dot.done{background:var(--done);}
+  .map-dot.overdue{box-shadow:0 0 0 2px var(--danger);}
   .map-legend{font-size:12px;color:var(--sub);max-width:820px;margin:0 auto;}
   .map-legend span{display:inline-flex;align-items:center;gap:4px;margin-right:14px;}
   .dot-swatch{width:10px;height:10px;border-radius:50%;display:inline-block;}
@@ -382,7 +393,7 @@
 
   <main>
     <section id="view-home" class="active">
-      <p class="hint">100個のやりたいことを手書きで書き、時間×お金マップで整理し、100ページの日記に記録していくアプリです。作業内容はこの端末に自動保存されますが、他の端末に移したり確実に残すには書き出しでファイル保存してください。</p>
+      <p class="hint">100個のやりたいことを手書きで書き、年齢×お金マップで整理し、100ページの日記に記録していくアプリです。作業内容はこの端末に自動保存されますが、他の端末に移したり確実に残すには書き出しでファイル保存してください。</p>
       <p class="callout">📱 <strong>iPadでご利用の場合</strong>: データはこの端末のSafariだけに保存され、他の端末とは同期されません。🔗「ローカルファイルに自動保存」はiPadのSafariでは使えないため、忘れずに💾「書き出し」で定期的にバックアップを取ってください(📂「読み込み」でいつでも復元できます)。</p>
       <div class="home-cards">
         <div class="home-card" data-goto="list">
@@ -396,8 +407,8 @@
         </div>
         <div class="home-card" data-goto="map">
           <div class="home-icon-tile"><svg class="icon icon-lg"><use href="#icon-grid"></use></svg></div>
-          <h2>② 時間×お金マップ</h2>
-          <p>書いた項目を、かかる時間とお金の四象限にドラッグで配置。配置前の項目は上のトレイに並びます。</p>
+          <h2>② 年齢×お金マップ</h2>
+          <p>書いた項目を、年齢とお金の四象限にドラッグで配置。配置前の項目は上のトレイに並びます。リストの並び順はこのマップの配置に連動します。</p>
         </div>
         <div class="home-card" data-goto="diary">
           <div class="home-icon-tile"><svg class="icon icon-lg"><use href="#icon-book"></use></svg></div>
@@ -408,12 +419,19 @@
     </section>
 
     <section id="view-list">
-      <p class="hint">番号の横のエリアをタップすると、大きく手書きできる詳細画面(タイトル・記入日・達成目標日・達成日つき)が開きます。チェックを入れると達成日が自動で入ります。</p>
+      <p class="hint">番号の横のエリアをタップすると、タイトル・詳細・記入日・達成目標日・達成日を編集する画面が開きます。チェックを入れると達成日が自動で入ります。</p>
+      <div class="list-toolbar">
+        <span class="list-toolbar-label">並び順</span>
+        <div class="mode-group" id="listSortToggle">
+          <button data-sort="map">マップ順</button>
+          <button data-sort="id">番号順</button>
+        </div>
+      </div>
       <div id="listContainer"></div>
     </section>
 
     <section id="view-map">
-      <p class="hint">下のトレイにある番号をドラッグして、時間とお金の四象限マップに配置してください。マップからトレイに戻すこともできます。</p>
+      <p class="hint">下のトレイにある番号をドラッグして、年齢とお金の四象限マップに配置してください。マップからトレイに戻すこともできます。リストの並び順はここでの配置(お金→年齢の順)に連動します。</p>
       <div class="map-tray-label">未配置</div>
       <div class="map-tray" id="mapTray"></div>
       <div id="mapWrap">
@@ -421,12 +439,13 @@
         <div class="axis-line axis-v"></div>
         <div class="axis-label top">お金がかかる</div>
         <div class="axis-label bottom">お金がかからない</div>
-        <div class="axis-label left">時間がかからない</div>
-        <div class="axis-label right">時間がかかる</div>
+        <div class="axis-label left">歳を重ねても大丈夫</div>
+        <div class="axis-label right">若いうちにしかできない</div>
       </div>
       <div class="map-legend">
         <span><span class="dot-swatch" style="background:var(--sub)"></span>未達成</span>
         <span><span class="dot-swatch" style="background:var(--done)"></span>達成済み</span>
+        <span><span class="dot-swatch" style="background:var(--surface);box-shadow:0 0 0 2px var(--danger)"></span>達成目標日を過ぎている</span>
       </div>
     </section>
 
@@ -484,8 +503,6 @@
         <div class="field-label">詳細(任意)</div>
         <textarea id="itemDetailInput" class="detail-textarea" placeholder="例: 車を使わないで富士山に登りたい、絶景を味わいたい"></textarea>
       </div>
-      <div class="ink-toolbar" id="modalToolbar"></div>
-      <canvas class="ink modal-canvas" id="modalCanvas" style="margin-top:8px;"></canvas>
       <div class="date-grid">
         <label>記入日<input type="date" id="dateEntry"></label>
         <label>達成目標日<input type="date" id="dateTarget"></label>
@@ -528,6 +545,7 @@ const ICON_CHECK = '<svg class="icon icon-sm"><use href="#icon-checkcircle"></us
 
 function pad(n){ return String(n).padStart(2,"0"); }
 function todayStr(){ const d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function isOverdue(item){ return !!item.targetDate && !item.checked && item.targetDate < todayStr(); }
 function formatShort(dateStr){ if(!dateStr) return ""; const p=dateStr.split("-"); return p[1]+"/"+p[2]; }
 
 /* ---------------- state ---------------- */
@@ -752,6 +770,7 @@ function showView(name){
   document.querySelectorAll(".tab").forEach(b=>{
     b.classList.toggle("active", b.dataset.view===name);
   });
+  if(name==="list") renderList();
   if(name==="map") renderMap();
   if(name==="diary") renderDiaryPage();
 }
@@ -1037,7 +1056,11 @@ function createInk(canvas){
     // finger's pointerup is what actually brings pointers.size to 0.
     if(hadPinch && pointers.size===0){
       hadPinch = false;
-      if(view.scale<=1.08){ resetView(true); }
+      // 1.3 rather than something closer to 1 — a real pinch-in gesture
+      // rarely lands exactly back on 1x, and the point is to finish the
+      // job once the user has clearly shrunk it back down, not to demand
+      // pixel-precise pinching before it snaps.
+      if(view.scale<=1.3){ resetView(true); }
     }
   }
   canvas.addEventListener("pointerdown", pointerDown);
@@ -1143,9 +1166,39 @@ function buildPenToolbar(container){
 }
 
 /* ---------------- list view ---------------- */
+const LIST_SORT_KEY = "bucketlist_listsort_v1";
 const listContainer = document.getElementById("listContainer");
 const rowRefs = {};
+let listSortMode = (function(){
+  try{ return localStorage.getItem(LIST_SORT_KEY); }catch(e){ return null; }
+})() === "id" ? "id" : "map";
+function setListSortMode(mode){
+  listSortMode = mode;
+  try{ localStorage.setItem(LIST_SORT_KEY, mode); }catch(e){}
+  document.querySelectorAll("#listSortToggle button").forEach(b=>{
+    b.classList.toggle("on", b.dataset.sort===mode);
+  });
+  renderList();
+}
+document.querySelectorAll("#listSortToggle button").forEach(b=>{
+  b.classList.toggle("on", b.dataset.sort===listSortMode);
+  b.addEventListener("click", ()=>setListSortMode(b.dataset.sort));
+});
 
+function priorityScore(item){
+  // Money is a renewable resource — you can always earn or save more of
+  // it. Age isn't: something that must be done young can't be postponed
+  // the way something merely expensive can (you can save up for it).
+  // So the age axis carries most of the weight, with cost as a secondary
+  // push — a wish that's both costly AND has to happen young scores
+  // highest, because it needs BOTH decisions (start saving, don't put it
+  // off) made now rather than later. Only meaningful once placed on the
+  // map, since there's no position yet to score.
+  if(!item.mapPos) return null;
+  const ageFactor = item.mapPos.x;       // 0 = fine even later, 1 = must be young
+  const costFactor = 1 - item.mapPos.y;  // 0 = costs nothing, 1 = costly
+  return Math.round((ageFactor*0.7 + costFactor*0.3) * 100);
+}
 function updateHomeProgress(){
   const fill = document.getElementById("homeProgressFill");
   const label = document.getElementById("homeProgressLabel");
@@ -1170,8 +1223,16 @@ function refreshRow(id){
     ref.statusEl.textContent = item.strokes.length ? "✎ 記入あり" : "タップして記入…";
   }
   ref.meta.innerHTML = "";
+  const overdue = isOverdue(item);
+  ref.row.classList.toggle("overdue", overdue);
+  ref.num.classList.toggle("overdue", overdue);
+  const score = priorityScore(item);
+  if(score!==null && !item.checked){
+    const p = document.createElement("div"); p.className="pill pill-score"; p.textContent = "優先度 "+score;
+    ref.meta.appendChild(p);
+  }
   if(item.targetDate){
-    const p = document.createElement("div"); p.className="pill"; p.innerHTML = ICON_TARGET + formatShort(item.targetDate);
+    const p = document.createElement("div"); p.className="pill"+(overdue?" pill-overdue":""); p.innerHTML = ICON_TARGET + formatShort(item.targetDate);
     ref.meta.appendChild(p);
   }
   if(item.achievedDate){
@@ -1180,9 +1241,27 @@ function refreshRow(id){
   }
 }
 
+function mapOrderedItems(){
+  // The list mirrors whatever order the user actually dragged wishes into
+  // on the money x age map, rather than trying to derive an order from the
+  // axes' meaning in the abstract (money and age don't share one natural
+  // ordering). Primary key: cost, cheapest first (mapPos.y is 1 at the
+  // "costs nothing" edge, 0 at "costs a lot", so higher y sorts first).
+  // Secondary key, within similar cost: age-friendliness, "fine even when
+  // older" first (mapPos.x is 0 at that edge). Items never placed on the
+  // map keep their original numbering and sort after every placed item.
+  return state.items.slice().sort((a,b)=>{
+    const pa = a.mapPos, pb = b.mapPos;
+    if(!pa && !pb) return a.id-b.id;
+    if(!pa) return 1;
+    if(!pb) return -1;
+    return (pb.y-pa.y) || (pa.x-pb.x) || (a.id-b.id);
+  });
+}
 function renderList(){
   listContainer.innerHTML = "";
-  state.items.forEach(item=>{
+  const items = listSortMode==="map" ? mapOrderedItems() : state.items;
+  items.forEach(item=>{
     const row = document.createElement("div");
     row.className = "item-row" + (item.checked ? " done" : "");
 
@@ -1220,16 +1299,13 @@ function renderList(){
     });
 
     listContainer.appendChild(row);
-    rowRefs[item.id] = {row, cb, meta, titleEl, statusEl};
+    rowRefs[item.id] = {row, cb, num, meta, titleEl, statusEl};
     refreshRow(item.id);
   });
 }
 
 /* ---------------- item detail modal ---------------- */
 const itemModalEl = document.getElementById("itemModal");
-const modalCanvas = document.getElementById("modalCanvas");
-const modalInk = createInk(modalCanvas);
-buildPenToolbar(document.getElementById("modalToolbar"));
 const itemTitleInput = document.getElementById("itemTitleInput");
 const itemDetailInput = document.getElementById("itemDetailInput");
 const dateEntry = document.getElementById("dateEntry");
@@ -1247,13 +1323,7 @@ function openItemModal(id){
   dateTarget.value = item.targetDate || "";
   dateAchieved.value = item.achievedDate || "";
   itemModalEl.classList.remove("hidden");
-  requestAnimationFrame(()=>{
-    modalInk.bind(()=>item.strokes, ()=>{
-      if(!item.entryDate){ item.entryDate = todayStr(); dateEntry.value = item.entryDate; }
-      refreshRow(id);
-      saveLocal();
-    });
-  });
+  requestAnimationFrame(()=>{ itemTitleInput.focus(); });
 }
 function closeItemModal(){
   itemModalEl.classList.add("hidden");
@@ -1262,10 +1332,34 @@ function closeItemModal(){
 document.getElementById("modalClose").addEventListener("click", closeItemModal);
 itemModalEl.addEventListener("click", (e)=>{ if(e.target===itemModalEl) closeItemModal(); });
 
+// Enter moves through the fields in the order they're filled in, so a
+// wish can be typed start-to-finish without reaching for the mouse.
+// Target date is the last stop in that chain (achieved date isn't — it's
+// normally set automatically by the checkbox, not typed), so Enter there
+// means "I'm done" and closes the modal instead of moving on.
+itemTitleInput.addEventListener("keydown", (e)=>{
+  if(e.key==="Enter"){ e.preventDefault(); itemDetailInput.focus(); }
+});
+itemDetailInput.addEventListener("keydown", (e)=>{
+  // Shift+Enter still inserts a newline — detail is the one multi-line
+  // field here, so plain Enter shouldn't trap someone who wants a second line.
+  if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); dateEntry.focus(); }
+});
+dateEntry.addEventListener("keydown", (e)=>{
+  if(e.key==="Enter"){ e.preventDefault(); dateTarget.focus(); }
+});
+dateTarget.addEventListener("keydown", (e)=>{
+  if(e.key==="Enter"){ e.preventDefault(); closeItemModal(); }
+});
+
+function markEntryStarted(item){
+  if(!item.entryDate){ item.entryDate = todayStr(); dateEntry.value = item.entryDate; }
+}
 itemTitleInput.addEventListener("input", ()=>{
   const item = state.items.find(it=>it.id===currentModalItemId);
   if(!item) return;
   item.title = itemTitleInput.value.trim() ? itemTitleInput.value : null;
+  markEntryStarted(item);
   refreshRow(item.id);
   if(diaryIndex+1===item.id) refreshDiaryTitle();
   saveLocal();
@@ -1274,6 +1368,7 @@ itemDetailInput.addEventListener("input", ()=>{
   const item = state.items.find(it=>it.id===currentModalItemId);
   if(!item) return;
   item.detail = itemDetailInput.value.trim() ? itemDetailInput.value : null;
+  markEntryStarted(item);
   saveLocal();
 });
 dateEntry.addEventListener("change", ()=>{
@@ -1379,11 +1474,14 @@ function attachDrag(el, item){
 function renderMap(){
   Array.from(mapWrap.querySelectorAll(".map-dot")).forEach(el=>el.remove());
   mapTray.innerHTML = "";
-  const active = state.items.filter(it=>it.strokes.length>0);
+  // Title is now the "this wish has content" signal (the item modal no
+  // longer has its own ink canvas) — strokes.length is kept only so wishes
+  // recorded before this change don't vanish from the map.
+  const active = state.items.filter(it=>it.title || it.strokes.length>0);
   active.forEach(item=>{
     if(item.mapPos){
       const dot = document.createElement("div");
-      dot.className = "map-dot" + (item.checked ? " done":"");
+      dot.className = "map-dot" + (item.checked ? " done":"") + (isOverdue(item) ? " overdue" : "");
       dot.textContent = item.id;
       dot.style.left = (item.mapPos.x*100)+"%";
       dot.style.top = (item.mapPos.y*100)+"%";
@@ -1391,7 +1489,7 @@ function renderMap(){
       mapWrap.appendChild(dot);
     } else {
       const chip = document.createElement("div");
-      chip.className = "tray-chip" + (item.checked ? " done" : "");
+      chip.className = "tray-chip" + (item.checked ? " done" : "") + (isOverdue(item) ? " overdue" : "");
       chip.textContent = item.id;
       attachDrag(chip, item);
       mapTray.appendChild(chip);
